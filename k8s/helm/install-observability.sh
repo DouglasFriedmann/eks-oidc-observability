@@ -8,5 +8,5 @@ helm repo update
 
 helm upgrade --install kube-prometheus-stack prometheus-community/kube-prometheus-stack \
   -n observability \
-  -f k8s/helm/kube-prometheus-stack-values.yaml
+  -f k8s/helm/kube-prometheus-stack.yaml
 

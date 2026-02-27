@@ -17,7 +17,7 @@ spec:
     spec:
       containers:
         - name: fastapi
-          image: IMAGE_PLACEHOLDER
+          image: 161230539245.dkr.ecr.us-east-1.amazonaws.com/eks-oidc-observability-dev-app:latest
           ports:
             - containerPort: 8000
 

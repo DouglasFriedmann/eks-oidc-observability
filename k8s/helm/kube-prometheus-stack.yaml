@@ -14,20 +14,7 @@ grafana:
 prometheus:
   prometheusSpec:
     retention: 12h
-    resources:
-      requests:
-        cpu: 100m
-        memory: 512Mi
-      limits:
-        cpu: 400m
-        memory: 1Gi
-    storageSpec:
-      volumeClaimTemplate:
-        spec:
-          accessModes: ["ReadWriteOnce"]
-          resources:
-            requests:
-              storage: 5Gi
+    storageSpec: {}
 
 alertmanager:
   enabled: false
