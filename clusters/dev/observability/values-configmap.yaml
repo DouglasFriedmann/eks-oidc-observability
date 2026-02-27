@@ -6,23 +6,23 @@ metadata:
 data:
   values.yaml: |
     grafana:
-  enabled: true
-  adminPassword: "admin"  # change later (or load from secret)
-  service:
-    type: ClusterIP
-  resources:
-    requests:
-      cpu: 50m
-      memory: 128Mi
-    limits:
-      cpu: 200m
-      memory: 256Mi
-
-prometheus:
-  prometheusSpec:
-    retention: 12h
-    storageSpec: {}
-
-alertmanager:
-  enabled: false
-
+      enabled: true
+      adminPassword: "admin"  # change later (or load from secret)
+      service:
+        type: ClusterIP
+      resources:
+        requests:
+          cpu: 50m
+          memory: 128Mi
+        limits:
+          cpu: 200m
+          memory: 256Mi
+    
+    prometheus:
+      prometheusSpec:
+        retention: 12h
+        storageSpec: {}
+    
+    alertmanager:
+      enabled: false
+    
