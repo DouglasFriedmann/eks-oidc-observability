@@ -1,0 +1,19 @@
+apiVersion: helm.toolkit.fluxcd.io/v2
+kind: HelmRelease
+metadata:
+  name: metrics-server
+  namespace: kube-system
+spec:
+  interval: 10m
+  chart:
+    spec:
+      chart: metrics-server
+      sourceRef:
+        kind: HelmRepository
+        name: metrics-server
+        namespace: kube-system
+      interval: 1h
+  values:
+    # For EKS this is usually fine; if your kubelet TLS causes issues,
+    # we can add args later, but start minimal.
+    replicas: 1
