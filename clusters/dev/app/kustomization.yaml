@@ -5,4 +5,4 @@ resources:
   - ../../../k8s/deployment.yaml
   - ../../../k8s/service.yaml
   - ../../../k8s/hpa.yaml
-  - ../../../k8s/servicemonitor.yaml
+    #  - ../../../k8s/servicemonitor.yaml
