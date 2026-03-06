@@ -9,5 +9,5 @@ resources:
 
 images:
   - name: 161230539245.dkr.ecr.us-east-1.amazonaws.com/eks-oidc-observability-dev-app
-    newTag: "main-initial"
+    newTag: main-initial # {"$imagepolicy": "flux-system:fastapi-app:tag"}
 
