@@ -1,0 +1,8 @@
+apiVersion: image.toolkit.fluxcd.io/v1beta2
+kind: ImageRepository
+metadata:
+  name: fastapi-app
+  namespace: flux-system
+spec:
+  image: 161230539245.dkr.ecr.us-east-1.amazonaws.com/eks-oidc-observability-dev-app
+  interval: 1m0s
