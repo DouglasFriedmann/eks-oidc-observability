@@ -17,3 +17,7 @@ output "ecr_repository_url" {
 output "github_actions_role_arn" {
   value = aws_iam_role.github_actions.arn
 }
+
+output "flux_image_reflector_role_arn" {
+  value = aws_iam_role.flux_image_reflector.arn
+}
