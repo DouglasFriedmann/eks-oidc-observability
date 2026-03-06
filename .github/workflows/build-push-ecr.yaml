@@ -1,0 +1,46 @@
+name: Build and Push Image to ECR
+
+on:
+  push:
+    branches: [ "main" ]
+    paths:
+      - "app/**"
+      - ".github/workflows/build-push-ecr.yaml"
+  workflow_dispatch:
+
+permissions:
+  id-token: write
+  contents: read
+
+jobs:
+  build-push:
+    if: ${{ vars.AWS_ROLE_ARN != '' }}
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Configure AWS credentials (OIDC)
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          role-to-assume: ${{ vars.AWS_ROLE_ARN }}
+          aws-region: us-east-1
+
+      - name: Login to Amazon ECR
+        id: login-ecr
+        uses: aws-actions/amazon-ecr-login@v2
+
+      - name: Set image tag
+        run: echo "IMAGE_TAG=main-${GITHUB_SHA}" >> $GITHUB_ENV
+
+      - name: Build image
+        run: |
+          docker build \
+            -t ${{ steps.login-ecr.outputs.registry }}/eks-oidc-observability-dev-app:${IMAGE_TAG} \
+            ./app
+
+      - name: Push image
+        run: |
+          docker push \
+            ${{ steps.login-ecr.outputs.registry }}/eks-oidc-observability-dev-app:${IMAGE_TAG}
