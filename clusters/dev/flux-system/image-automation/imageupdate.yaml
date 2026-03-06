@@ -16,7 +16,7 @@ spec:
       author:
         name: flux-bot
         email: flux-bot@users.noreply.github.com
-      messageTemplate: "chore(images): update app image to {{range .Updated.Images}}{{println .}}{{end}}"
+      messageTemplate: "chore(images): update app image to {{range .Changed.Changes}}{{println .OldValue \"->\" .NewValue}}{{end}}"
     push:
       branch: main
   update:
