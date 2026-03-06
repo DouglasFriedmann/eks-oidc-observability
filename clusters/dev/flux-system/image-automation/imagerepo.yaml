@@ -6,3 +6,4 @@ metadata:
 spec:
   image: 161230539245.dkr.ecr.us-east-1.amazonaws.com/eks-oidc-observability-dev-app
   interval: 1m0s
+  provider: aws
