@@ -6,8 +6,6 @@ resources:
   - service.yaml
   - hpa.yaml
   - servicemonitor.yaml
-
 images:
   - name: 161230539245.dkr.ecr.us-east-1.amazonaws.com/eks-oidc-observability-dev-app
-    newTag: main-initial # {"$imagepolicy": "flux-system:fastapi-app:tag"}
-
+    newTag: main-4178b6ffb3e9190f22c7efe069950892931ffd7a # {"$imagepolicy": "flux-system:fastapi-app:tag"}
