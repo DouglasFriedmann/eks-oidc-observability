@@ -18,9 +18,9 @@ module "eks" {
       name = "ng1"
 
       instance_types = ["t3.medium"]
-      min_size       = 1
+      min_size       = 2
       max_size       = 2
-      desired_size   = 1
+      desired_size   = 2
 
       capacity_type = "ON_DEMAND"
 
