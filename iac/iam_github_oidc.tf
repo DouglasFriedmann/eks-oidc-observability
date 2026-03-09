@@ -53,8 +53,53 @@ resource "aws_iam_role" "github_actions" {
   tags               = local.tags
 }
 
-# Tighten later by replacing with a least-privilege policy
-resource "aws_iam_role_policy_attachment" "github_admin" {
+data "aws_iam_policy_document" "github_actions_least_privilege" {
+  statement {
+    sid    = "AllowEcrLogin"
+    effect = "Allow"
+    actions = [
+      "ecr:GetAuthorizationToken"
+    ]
+    resources = ["*"]
+  }
+
+  statement {
+    sid    = "AllowPushToAppRepository"
+    effect = "Allow"
+    actions = [
+      "ecr:BatchCheckLayerAvailability",
+      "ecr:BatchGetImage",
+      "ecr:CompleteLayerUpload",
+      "ecr:DescribeImages",
+      "ecr:DescribeRepositories",
+      "ecr:InitiateLayerUpload",
+      "ecr:ListImages",
+      "ecr:PutImage",
+      "ecr:UploadLayerPart"
+    ]
+    resources = [
+      aws_ecr_repository.app.arn
+    ]
+  }
+
+  statement {
+    sid    = "AllowDescribeEksCluster"
+    effect = "Allow"
+    actions = [
+      "eks:DescribeCluster"
+    ]
+    resources = [
+      module.eks.cluster_arn
+    ]
+  }
+}
+
+resource "aws_iam_policy" "github_actions_least_privilege" {
+  name   = "${local.name}-github-actions-least-privilege"
+  policy = data.aws_iam_policy_document.github_actions_least_privilege.json
+}
+
+resource "aws_iam_role_policy_attachment" "github_actions_least_privilege" {
   role       = aws_iam_role.github_actions.name
-  policy_arn = "arn:aws:iam::aws:policy/AdministratorAccess"
+  policy_arn = aws_iam_policy.github_actions_least_privilege.arn
 }
