@@ -1,159 +1,272 @@
-# EKS OIDC Observability
+EKS OIDC Observability
 
-🧠 Overview
+Production-style AWS EKS platform built with Terraform, FluxCD GitOps, and secure CI/CD.
 
-This project provisions a fully reproducible Kubernetes platform on AWS and deploys a FastAPI application using GitOps principles.
+This project demonstrates how to build and operate a Kubernetes platform using modern DevOps practices including:
 
-It demonstrates:
+Infrastructure as Code
 
-Infrastructure as Code (Terraform)
+GitOps-based cluster management
 
-EKS cluster provisioning
+secure CI/CD with OIDC federation
 
-OIDC-based GitHub Actions IAM integration
+Kubernetes observability
 
-GitOps with FluxCD
+centralized logging
 
-Observability via Prometheus + Grafana
+least-privilege IAM design
 
-Horizontal Pod Autoscaling with metrics-server
+The goal is to showcase how a real platform might be engineered, not just how individual tools work.
 
-Container hardening best practices
+Architecture
 
-🏗 Architecture
+This repository provisions and operates a Kubernetes platform end-to-end.
 
-Infrastructure (Terraform)
+GitHub Actions (OIDC)
+        │
+        ▼
+   AWS IAM Role
+        │
+        ▼
+Build → Scan → Push
+        │
+        ▼
+        ECR
+        │
+        ▼
+FluxCD Image Automation
+        │
+        ▼
+GitOps Reconciliation
+        │
+        ▼
+        EKS
+   ├── FastAPI application
+   ├── Prometheus + Grafana
+   ├── Metrics Server
+   └── Fluent Bit → CloudWatch Logs
 
-VPC (public subnets)
+Core design patterns:
+
+Infrastructure provisioned via Terraform
+
+Cluster state managed through FluxCD GitOps
+
+CI authenticated to AWS using GitHub OIDC
+
+Pods access AWS services through IRSA
+
+Logs centralized in CloudWatch
+
+Metrics visualized in Grafana
+
+Key DevOps Practices Demonstrated
+Infrastructure as Code
+
+Terraform provisions:
+
+VPC and networking
 
 EKS cluster
+
+managed node groups
 
 ECR repository
 
-IAM roles (including GitHub OIDC role)
+IAM roles and policies
 
-Remote state
+GitHub OIDC provider
 
-Application
+IRSA roles for Kubernetes workloads
 
-FastAPI app
+Infrastructure is reproducible and environment-agnostic.
 
-Dockerized (non-root container)
+GitOps with FluxCD
 
-Exposes /health and /metrics
+Cluster configuration is defined declaratively in:
 
-Deployed via Kubernetes manifests
-
-GitOps
-
-FluxCD bootstrapped to the cluster
-
-clusters/dev/ is the source of truth
-
-All workloads reconciled from Git
-
-Observability
-
-Prometheus (via kube-prometheus-stack Helm chart)
-
-Grafana
-
-ServiceMonitor for app metrics
-
-metrics-server for HPA
-
-📂 Repository Structure
-app/                 → FastAPI application + Dockerfile
-iac/                 → Terraform infrastructure (EKS, VPC, ECR, IAM)
-k8s/                 → Base Kubernetes manifests
-clusters/dev/        → Flux GitOps environment (source of truth)
-GitOps Layout
 clusters/dev/
-├── app/
-├── observability/
-├── metrics-server/
-├── flux-system/
-└── kustomization.yaml
 
-Flux reconciles clusters/dev/ continuously.
+Flux continuously reconciles cluster state with the repository.
 
-🔁 Deployment Flow
-1️⃣ Provision Infrastructure
-cd iac
-terraform init
-terraform apply
+Benefits:
 
-This provisions:
+Git becomes the source of truth
 
-EKS cluster
+safe, auditable deployments
 
-ECR repo
+automatic drift correction
 
-IAM roles
+Secure CI/CD with GitHub OIDC
 
-Networking
+GitHub Actions authenticates to AWS using OpenID Connect federation.
 
-2️⃣ Build and Push Application Image
-docker build -t app:dev ./app
-docker tag app:dev <ECR_REPO_URL>:dev
-docker push <ECR_REPO_URL>:dev
-3️⃣ GitOps Deployment
+This eliminates static credentials in CI.
 
-Flux automatically reconciles:
+Security controls include:
 
-flux reconcile source git flux-system -n flux-system
-flux reconcile kustomization flux-system -n flux-system --with-source
+role assumption restricted to this repository
 
-Application and observability stack are applied via HelmRelease and Kustomize.
+branch-level restrictions
 
-📊 Observability
+short-lived AWS credentials
 
-Installed via Flux HelmRelease:
+Least-Privilege IAM
+
+The GitHub Actions IAM role allows only:
+
+ECR login
+
+pushing images to the application repository
+
+describing the EKS cluster
+
+Administrator privileges were intentionally removed.
+
+Kubernetes Observability
+
+Monitoring stack deployed through Helm:
+
+kube-prometheus-stack
+
+Includes:
 
 Prometheus
 
 Grafana
 
+Alertmanager
+
 kube-state-metrics
 
-Node exporter
+node exporter
 
-Verify
-kubectl get pods -n observability
-kubectl top pods -n app
-kubectl get hpa -n app
+Metrics provide visibility into cluster and workload health.
 
-Grafana:
+Centralized Logging
 
-kubectl port-forward svc/kube-prometheus-stack-grafana -n observability 3000:80
-⚙️ Horizontal Pod Autoscaling
+Cluster logs are collected by Fluent Bit.
 
-metrics-server installed via Flux HelmRelease
+Architecture:
 
-HPA scales FastAPI deployment based on CPU
+Kubernetes Pods
+      │
+      ▼
+Fluent Bit DaemonSet
+      │
+      ▼
+CloudWatch Logs
 
-Verify:
+Fluent Bit runs with IAM Roles for Service Accounts (IRSA) so pods can write logs to AWS without inheriting node IAM permissions.
 
-kubectl top pods -n app
-kubectl get hpa -n app
-🔐 Security Considerations
+Flux Image Automation
 
-GitHub OIDC IAM role (no long-lived AWS keys in CI)
+Flux automatically updates Kubernetes manifests when new images are pushed to ECR.
 
-Non-root container runtime
+Workflow:
 
-IAM least privilege (cluster + GitHub role separation)
+CI builds image
+        │
+        ▼
+Image pushed to ECR
+        │
+        ▼
+Flux Image Reflector detects new tag
+        │
+        ▼
+Flux updates manifests
+        │
+        ▼
+Cluster reconciles automatically
 
-GitOps source authentication via SSH deploy key
+This enables fully automated application deployments via GitOps.
 
-No secrets committed to Git
+Repository Structure
+app/
+  FastAPI sample application
 
-💸 Teardown
+clusters/dev/
+  GitOps environment configuration
 
-To avoid AWS costs:
+  app/
+    Application manifests
 
-Suspend Flux (optional)
-flux suspend kustomization flux-system -n flux-system
-Destroy infrastructure
-cd iac
-terraform destroy
+  observability/
+    Prometheus + Grafana stack
+
+  metrics-server/
+    Kubernetes metrics API
+
+  fluent-bit/
+    Fluent Bit HelmRelease + IRSA
+
+  flux-system/
+    Flux bootstrap configuration
+
+iac/
+  Terraform infrastructure
+
+  vpc.tf
+  eks.tf
+  ecr.tf
+  iam_github_oidc.tf
+  iam_fluent_bit_irsa.tf
+  iam_flux_image_reflector_irsa.tf
+
+k8s-legacy/
+  Early Kubernetes manifests retained for reference
+Platform Components
+
+Infrastructure:
+
+AWS EKS
+
+AWS VPC
+
+AWS ECR
+
+AWS CloudWatch Logs
+
+IAM OIDC Federation
+
+Platform tooling:
+
+Terraform
+
+FluxCD
+
+Helm
+
+Kubernetes
+
+Observability:
+
+Prometheus
+
+Grafana
+
+Fluent Bit
+
+CI/CD:
+
+GitHub Actions
+
+Trivy security scanning
+
+Application:
+
+FastAPI
+
+Security Design
+
+Several production security patterns are demonstrated:
+
+GitHub OIDC federation (no static AWS credentials)
+
+least-privilege CI IAM role
+
+IRSA for Kubernetes workloads
+
+container image vulnerability scanning
+
+scoped IAM policies
