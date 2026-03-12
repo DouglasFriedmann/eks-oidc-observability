@@ -1,69 +1,66 @@
-EKS OIDC Observability
+# EKS OIDC Observability
 
-Production-style AWS EKS platform built with Terraform, FluxCD GitOps, and secure CI/CD.
+![CI](https://github.com/DouglasFriedmann/eks-oidc-observability/actions/workflows/ci.yml/badge.svg)
+![CodeQL](https://github.com/DouglasFriedmann/eks-oidc-observability/actions/workflows/codeql.yml/badge.svg)
 
-This project demonstrates how to build and operate a Kubernetes platform using modern DevOps practices including:
+Production-style AWS EKS platform built with Terraform, FluxCD GitOps, and secure CI/CD using GitHub OIDC federation.
 
-Infrastructure as Code
+This project demonstrates how to build and operate a Kubernetes platform using modern DevOps practices.
 
-GitOps-based cluster management
+Key areas demonstrated:
 
-secure CI/CD with OIDC federation
-
-Kubernetes observability
-
-centralized logging
-
-least-privilege IAM design
-
-The goal is to showcase how a real platform might be engineered, not just how individual tools work.
+- Infrastructure as Code
+- GitOps-based cluster management
+- secure CI/CD without static credentials
+- Kubernetes observability
+- centralized logging
+- least-privilege IAM design
 
 Architecture
 
-This repository provisions and operates a Kubernetes platform end-to-end.
+This repository provisions and operates the entire platform lifecycle.
 
 GitHub Actions (OIDC)
         │
         ▼
-   AWS IAM Role
+     AWS IAM Role
         │
         ▼
-Build → Scan → Push
+ Build → Scan → Push
         │
         ▼
-        ECR
+         ECR
         │
         ▼
-FluxCD Image Automation
+ FluxCD Image Automation
         │
         ▼
-GitOps Reconciliation
+ GitOps Reconciliation
         │
         ▼
-        EKS
-   ├── FastAPI application
-   ├── Prometheus + Grafana
-   ├── Metrics Server
-   └── Fluent Bit → CloudWatch Logs
+          EKS
+        ├── FastAPI application
+        ├── Prometheus + Grafana
+        ├── Metrics Server
+        └── Fluent Bit → CloudWatch Logs
 
-Core design patterns:
+Core design patterns used in this project:
 
-Infrastructure provisioned via Terraform
+Infrastructure provisioned with Terraform
 
 Cluster state managed through FluxCD GitOps
 
 CI authenticated to AWS using GitHub OIDC
 
-Pods access AWS services through IRSA
+Pods access AWS services using IRSA
 
 Logs centralized in CloudWatch
 
-Metrics visualized in Grafana
+Metrics visualized with Grafana
 
-Key DevOps Practices Demonstrated
 Infrastructure as Code
 
-Terraform provisions:
+Terraform provisions the platform infrastructure, including:
 
 VPC and networking
 
@@ -71,7 +68,7 @@ EKS cluster
 
 managed node groups
 
-ECR repository
+ECR container registry
 
 IAM roles and policies
 
@@ -79,21 +76,21 @@ GitHub OIDC provider
 
 IRSA roles for Kubernetes workloads
 
-Infrastructure is reproducible and environment-agnostic.
+This ensures the entire environment is reproducible and environment-agnostic.
 
 GitOps with FluxCD
 
-Cluster configuration is defined declaratively in:
+Cluster configuration is defined declaratively under:
 
 clusters/dev/
 
-Flux continuously reconciles cluster state with the repository.
+Flux continuously reconciles the cluster state with the repository.
 
-Benefits:
+Benefits include:
 
-Git becomes the source of truth
+Git as the single source of truth
 
-safe, auditable deployments
+safe and auditable deployments
 
 automatic drift correction
 
@@ -101,7 +98,7 @@ Secure CI/CD with GitHub OIDC
 
 GitHub Actions authenticates to AWS using OpenID Connect federation.
 
-This eliminates static credentials in CI.
+This eliminates static credentials in CI pipelines.
 
 Security controls include:
 
@@ -113,23 +110,21 @@ short-lived AWS credentials
 
 Least-Privilege IAM
 
-The GitHub Actions IAM role allows only:
+The GitHub Actions IAM role allows only the permissions required for CI:
 
-ECR login
+login to ECR
 
-pushing images to the application repository
+push application images
 
-describing the EKS cluster
+describe the EKS cluster
 
-Administrator privileges were intentionally removed.
+Administrator privileges were intentionally removed to demonstrate least-privilege design.
 
 Kubernetes Observability
 
-Monitoring stack deployed through Helm:
+Monitoring is deployed via Helm using the kube-prometheus-stack.
 
-kube-prometheus-stack
-
-Includes:
+Components include:
 
 Prometheus
 
@@ -141,13 +136,11 @@ kube-state-metrics
 
 node exporter
 
-Metrics provide visibility into cluster and workload health.
+These provide visibility into both cluster health and application performance.
 
 Centralized Logging
 
-Cluster logs are collected by Fluent Bit.
-
-Architecture:
+Cluster logs are collected by Fluent Bit and forwarded to CloudWatch Logs.
 
 Kubernetes Pods
       │
@@ -157,55 +150,57 @@ Fluent Bit DaemonSet
       ▼
 CloudWatch Logs
 
-Fluent Bit runs with IAM Roles for Service Accounts (IRSA) so pods can write logs to AWS without inheriting node IAM permissions.
+Fluent Bit runs using IAM Roles for Service Accounts (IRSA) so workloads can access AWS services without inheriting node-level permissions.
 
 Flux Image Automation
 
 Flux automatically updates Kubernetes manifests when new images are pushed to ECR.
 
-Workflow:
-
 CI builds image
-        │
-        ▼
+      │
+      ▼
 Image pushed to ECR
-        │
-        ▼
+      │
+      ▼
 Flux Image Reflector detects new tag
-        │
-        ▼
+      │
+      ▼
 Flux updates manifests
-        │
-        ▼
+      │
+      ▼
 Cluster reconciles automatically
 
-This enables fully automated application deployments via GitOps.
+This enables fully automated application deployments through GitOps.
+
+Quality and Security
+
+The repository includes automated safeguards that run on pull requests:
+
+pytest unit testing
+
+ruff linting and formatting
+
+GitHub Actions CI
+
+CodeQL security scanning
+
+Trivy container vulnerability scanning
+
+Dependabot dependency updates
+
+These checks ensure code quality and security before changes are merged.
 
 Repository Structure
-app/
-  FastAPI sample application
+app/                 FastAPI sample application
 
-clusters/dev/
-  GitOps environment configuration
+clusters/dev/        GitOps environment configuration
+  app/               Application manifests
+  observability/     Prometheus + Grafana stack
+  metrics-server/    Kubernetes metrics API
+  fluent-bit/        Fluent Bit HelmRelease + IRSA
+  flux-system/       Flux bootstrap configuration
 
-  app/
-    Application manifests
-
-  observability/
-    Prometheus + Grafana stack
-
-  metrics-server/
-    Kubernetes metrics API
-
-  fluent-bit/
-    Fluent Bit HelmRelease + IRSA
-
-  flux-system/
-    Flux bootstrap configuration
-
-iac/
-  Terraform infrastructure
-
+iac/                 Terraform infrastructure
   vpc.tf
   eks.tf
   ecr.tf
@@ -213,11 +208,10 @@ iac/
   iam_fluent_bit_irsa.tf
   iam_flux_image_reflector_irsa.tf
 
-k8s-legacy/
-  Early Kubernetes manifests retained for reference
+k8s-legacy/          Early Kubernetes manifests retained for reference
 Platform Components
 
-Infrastructure:
+Infrastructure
 
 AWS EKS
 
@@ -227,9 +221,9 @@ AWS ECR
 
 AWS CloudWatch Logs
 
-IAM OIDC Federation
+IAM OIDC federation
 
-Platform tooling:
+Platform tooling
 
 Terraform
 
@@ -239,7 +233,7 @@ Helm
 
 Kubernetes
 
-Observability:
+Observability
 
 Prometheus
 
@@ -247,19 +241,19 @@ Grafana
 
 Fluent Bit
 
-CI/CD:
+CI/CD
 
 GitHub Actions
 
-Trivy security scanning
+Trivy container scanning
 
-Application:
+Application
 
 FastAPI
 
 Security Design
 
-Several production security patterns are demonstrated:
+This platform demonstrates several production security patterns:
 
 GitHub OIDC federation (no static AWS credentials)
 
