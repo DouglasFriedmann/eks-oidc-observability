@@ -1,23 +1,27 @@
-from fastapi import FastAPI
-from prometheus_client import Counter, Histogram, generate_latest, CONTENT_TYPE_LATEST
-from starlette.responses import Response
-import time
 import random
+import time
+
+from fastapi import FastAPI
+from prometheus_client import CONTENT_TYPE_LATEST, Counter, Histogram, generate_latest
+from starlette.responses import Response
 
 app = FastAPI(title="EKS Observability Lab")
 
 REQ_COUNT = Counter("http_requests_total", "Total HTTP requests", ["path"])
 REQ_LATENCY = Histogram("http_request_latency_seconds", "Request latency", ["path"])
 
+
 @app.get("/")
 def root():
     REQ_COUNT.labels(path="/").inc()
     return {"ok": True, "service": "eks-observability-lab"}
 
+
 @app.get("/healthz")
 def healthz():
     REQ_COUNT.labels(path="/healthz").inc()
     return {"status": "healthy"}
+
 
 @app.get("/work")
 def work():
@@ -29,8 +33,8 @@ def work():
     REQ_LATENCY.labels(path=path).observe(time.time() - start)
     return {"status": "done"}
 
+
 @app.get("/metrics")
 def metrics():
     data = generate_latest()
     return Response(content=data, media_type=CONTENT_TYPE_LATEST)
-
