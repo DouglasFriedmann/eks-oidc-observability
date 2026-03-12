@@ -1,7 +1,7 @@
 # EKS OIDC Observability
 
-![CI](https://github.com/DouglasFriedmann/eks-oidc-observability/actions/workflows/ci.yml/badge.svg)
-![CodeQL](https://github.com/DouglasFriedmann/eks-oidc-observability/actions/workflows/codeql.yml/badge.svg)
+![CI](https://github.com/DouglasFriedmann/eks-oidc-observability/actions/workflows/ci.yaml/badge.svg)
+![CodeQL](https://github.com/DouglasFriedmann/eks-oidc-observability/actions/workflows/codeql.yaml/badge.svg)
 
 Production-style AWS EKS platform built with Terraform, FluxCD GitOps, and secure CI/CD using GitHub OIDC federation.
 
